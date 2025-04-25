@@ -1,0 +1,1 @@
+# Detects hand gestures using webcam and maps to controls
