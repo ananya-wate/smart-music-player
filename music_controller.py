@@ -37,6 +37,8 @@ def play_next():
  if current_index<len(playlist)-1:
   current_index+=1
   playMusic(playlist[current_index])
+ else:
+  print("at the end of the playlist 🎵")
 
 #play previous
 def play_previous():
@@ -44,3 +46,6 @@ def play_previous():
  if current_index>0:
   current_index-=1
   playMusic(playlist[current_index])
+ else:
+  print("already at first song 🎵")
+  
