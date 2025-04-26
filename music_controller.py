@@ -1,51 +1,64 @@
-# this will contain Functions to control music playback using pygame
-import pygame.mixer  #mixer module is just like a cd player it lets you play mp3 songs
-# import pygame library's mixer module for audio
+import pygame
+import os
+
+# Initialize mixer
 pygame.mixer.init()
-# initialize mixer system -- required before using any audio
 
-playlist=[]#global playlist
-current_index=0#current song tracker
+songs = [
+    "songs/song1.mp3",
+    "songs/song2.mp3",
+    "songs/song3.mp3",
+    "songs/song4.mp3"
+]
 
-#set the playlist this will be called from main
-def setPlaylist(songs):
- global playlist
- playlist=songs
+current_index = 0
+is_playing = False
+is_paused = False
 
-# funtion to play music 
-def playMusic(filepath):
-# loads and plays an mp3 
- pygame.mixer.music.load(filepath)#load the file into memory
- pygame.mixer.music.play()#play music
+def setPlaylist(new_playlist):
+    global songs
+    songs = new_playlist
 
-#function to stop currently playing music
+def playMusic():
+    global is_playing, is_paused
+    if is_paused:
+        resumeMusic()  # If paused, resume instead of restarting
+        return
+    pygame.mixer.music.load(songs[current_index])
+    pygame.mixer.music.play()
+    is_playing = True
+    is_paused = False  # Ensuring paused is False when playing
+    print(f"Playing: {songs[current_index]}")
+    
+
 def pause():
- #pauses the audio .. can be resumed with unpause()
- pygame.mixer.music.pause() #freezes the audio
+    global is_playing, is_paused
+    if is_playing and not is_paused:
+        pygame.mixer.music.pause()
+        is_paused = True
+        print("Paused ⏸️")
+    elif is_paused:  # If already paused, resume instead
+        resumeMusic()
 
-#function to unpause i.e to resume the paused song
-def unpause():
- pygame.mixer.music.unpause()#resumes from where it was paused
+def resumeMusic():
+    global is_paused
+    if is_paused:
+        pygame.mixer.music.unpause()
+        is_paused = False
+        print("Resumed ▶️")
 
-#function to stop playback completely
-def stop():
- pygame.mixer.music.stop()#ends the playback and clears the loaded song
-
-# play next song
 def play_next():
- global current_index
- if current_index<len(playlist)-1:
-  current_index+=1
-  playMusic(playlist[current_index])
- else:
-  print("at the end of the playlist 🎵")
+    global current_index, is_playing, is_paused
+    if current_index < len(songs) - 1:
+        current_index += 1
+        playMusic()
+    else:
+        print("Already at last song 🎵")
 
-#play previous
 def play_previous():
- global current_index
- if current_index>0:
-  current_index-=1
-  playMusic(playlist[current_index])
- else:
-  print("already at first song 🎵")
-  
+    global current_index, is_playing, is_paused
+    if current_index > 0:
+        current_index -= 1
+        playMusic()
+    else:
+        print("Already at first song 🎵")
