@@ -4,6 +4,14 @@ import pygame.mixer  #mixer module is just like a cd player it lets you play mp3
 pygame.mixer.init()
 # initialize mixer system -- required before using any audio
 
+playlist=[]#global playlist
+current_index=0#current song tracker
+
+#set the playlist this will be called from main
+def setPlaylist(songs):
+ global playlist
+ playlist=songs
+
 # funtion to play music 
 def playMusic(filepath):
 # loads and plays an mp3 
@@ -22,3 +30,17 @@ def unpause():
 #function to stop playback completely
 def stop():
  pygame.mixer.music.stop()#ends the playback and clears the loaded song
+
+# play next song
+def play_next():
+ global current_index
+ if current_index<len(playlist)-1:
+  current_index+=1
+  playMusic(playlist[current_index])
+
+#play previous
+def play_previous():
+ global current_index
+ if current_index>0:
+  current_index-=1
+  playMusic(playlist[current_index])
