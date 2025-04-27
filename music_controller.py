@@ -1,51 +1,66 @@
+#music controller
+from db_playlist import get_songs, insert_play_history, get_song_id
 import pygame
-import os
-
+import time
 # Initialize mixer
 pygame.mixer.init()
 
-songs = [
-    "songs/song1.mp3",
-    "songs/song2.mp3",
-    "songs/song3.mp3",
-    "songs/song4.mp3"
-]
-
+# Fetch songs from the database
+songs = get_songs()  # This will return a list of tuples (song_name, song_path)
 current_index = 0
 is_playing = False
 is_paused = False
+def load_playlist():
+    """Initialize the playlist from database"""
+    global songs, current_index
+    songs = get_songs()
+    current_index = 0 if songs else -1
+    print(f"🎵 Loaded {len(songs)} songs from database")
 
 def setPlaylist(new_playlist):
     global songs
     songs = new_playlist
 
+def get_current_song_path():
+    """Returns the current song path or None"""
+    if songs and 0 <= current_index < len(songs):
+        return songs[current_index][1]  # Return the path part of the tuple
+    return None
+
 def playMusic():
     global is_playing, is_paused
     if is_paused:
-        resumeMusic()  # If paused, resume instead of restarting
-        return
-    pygame.mixer.music.load(songs[current_index])
-    pygame.mixer.music.play()
-    is_playing = True
-    is_paused = False  # Ensuring paused is False when playing
-    print(f"Playing: {songs[current_index]}")
+        return resumeMusic()
     
+    song_path = get_current_song_path()
+    if not song_path:
+        print("⚠️ No song selected!")
+        return
 
+    try:
+        pygame.mixer.music.load(song_path)
+        pygame.mixer.music.play()
+        is_playing = True
+        is_paused = False
+        
+        if song_id := get_song_id(song_path):
+            insert_play_history(song_id)
+
+    except Exception as e:
+        print(f"Error: {e}")
 def pause():
-    global is_playing, is_paused
-    if is_playing and not is_paused:
+    global is_paused
+    if pygame.mixer.music.get_busy():
         pygame.mixer.music.pause()
         is_paused = True
-        print("Paused ⏸️")
-    elif is_paused:  # If already paused, resume instead
-        resumeMusic()
+    else:
+        pygame.mixer.music.unpause()
+        is_paused = False
 
 def resumeMusic():
     global is_paused
-    if is_paused:
-        pygame.mixer.music.unpause()
-        is_paused = False
-        print("Resumed ▶️")
+    pygame.mixer.music.unpause()
+    is_paused = False
 
 def play_next():
     global current_index, is_playing, is_paused
@@ -62,3 +77,4 @@ def play_previous():
         playMusic()
     else:
         print("Already at first song 🎵")
+
