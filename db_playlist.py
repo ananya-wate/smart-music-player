@@ -1,10 +1,10 @@
 # database
 import mysql.connector
-from contextlib import contextmanager
+from contextlib import contextmanager#this lib is used to create safe database connection that automatically closes
 
 @contextmanager
 def db_connection():
-    """Safely manages database connections (auto-closes them)."""
+    #Safely manages database connections (auto-closes them)
     conn = None
     try:
         conn = mysql.connector.connect(
@@ -26,8 +26,8 @@ def get_songs():
         if conn:
             cursor = conn.cursor()
             cursor.execute("SELECT song_name, song_path FROM songs")
-            return cursor.fetchall()
-    return []
+            return cursor.fetchall()#fetch all rows(songs) from the table and return them
+    return []#if connection fails it returns empty list
 
 def get_song_id(song_path):
     """Fetches song ID from the database."""
@@ -35,8 +35,8 @@ def get_song_id(song_path):
         if conn:
             cursor = conn.cursor()
             cursor.execute("SELECT song_id FROM songs WHERE song_path = %s", (song_path,))
-            result = cursor.fetchone()
-            return result[0] if result else None
+            result = cursor.fetchone()#fetch only one row
+            return result[0] if result else None#if found, return song id
     return None
 
 def insert_play_history(song_id):
@@ -45,5 +45,5 @@ def insert_play_history(song_id):
         if conn:
             cursor = conn.cursor()
             cursor.execute("INSERT INTO play_history (song_id, play_time) VALUES (%s, NOW())", (song_id,))
-            conn.commit()
+            conn.commit()#save changes permanantly in database 
 
