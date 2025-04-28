@@ -1,12 +1,15 @@
 #gui.py
+
 import tkinter as tk
 import music_controller  
 import threading # Allows running gesture control in background (allows running 2 things at same time (mulitithreading))
+import matplotlib.pyplot as plt
 
 # Global variables for UI elements
 root = None #main window
 song_label = None #will show current song name
 btn_pause = None #pause/resume button
+play_counts={} # dictionary to track song plays
 
 def update_song_label():
     #Update the song name label
@@ -26,8 +29,15 @@ def force_update_ui():
     update_song_label()
     update_pause_button()
 
+def update_play_count():
+    """Fixed version that properly accesses the songs list"""
+    if music_controller.songs and 0 <= music_controller.current_index < len(music_controller.songs):
+        song_name = music_controller.songs[music_controller.current_index][0]
+        play_counts[song_name] = play_counts.get(song_name, 0) + 1
+
 def play_current_song():
     music_controller.playMusic()
+    update_play_count()
     force_update_ui()
 
 def toggle_pause_resume():
@@ -36,10 +46,12 @@ def toggle_pause_resume():
 
 def next_song():
     music_controller.play_next()
+    update_play_count()
     force_update_ui()
 
 def prev_song():
     music_controller.play_previous()
+    update_play_count()
     force_update_ui()
 
 def pause_or_resume():
@@ -54,6 +66,58 @@ def start_gesture_control():
     
     gesture_thread = threading.Thread(target=run_gesture, daemon=True) #Start new thread (parallel running) for gesture control so that music player doesn't freeze
     gesture_thread.start()
+
+def show_play_statistics():
+    if not play_counts:
+        print("No songs played yet!")
+        return
+
+    # Filter and sort songs by play count (descending)
+    filtered_data = {k: v for k, v in sorted(play_counts.items(),
+                                             key=lambda item: item[1], reverse=True) if v > 0}
+
+    if not filtered_data:
+        print("No songs have been played yet!")
+        return
+
+    songs = list(filtered_data.keys())
+    counts = list(filtered_data.values())
+
+    # Create figure with dark theme
+    plt.figure(figsize=(10, 8), facecolor='#121212')
+    ax = plt.gca()
+    ax.set_facecolor('#1E1E1E')
+
+    # Create pie chart with improved settings
+    wedges, texts, autotexts = plt.pie(
+        counts,
+        labels=songs,
+        autopct=lambda p: f'{p:.1f}% ({int(p / 100 * sum(counts))} plays)',
+        startangle=90,
+        colors=plt.cm.tab20.colors,
+        textprops={'color': 'white', 'fontsize': 10},
+        wedgeprops={'linewidth': 1, 'edgecolor': '#121212'}
+    )
+
+    # Style adjustments
+    plt.setp(autotexts, size=10, weight="bold")
+    plt.title(f'Song Play Statistics\nTotal Plays: {sum(counts)}',
+              color='white', fontsize=14, pad=20)
+
+    # Add interactive legend
+    legend = plt.legend(
+        wedges,
+        [f"{song}: {count} plays" for song, count in zip(songs, counts)],
+        loc="center left",
+        bbox_to_anchor=(1, 0.5),
+        facecolor='#1E1E1E',
+        edgecolor='white',
+        fontsize=10,
+        labelcolor='white'
+    )
+
+    plt.tight_layout()
+    plt.show()
 
 def start_app():
     global root, song_label, btn_pause
@@ -105,6 +169,12 @@ def start_app():
                            font=("Arial", 14), fg="white", bg="#1DB954",
                            command=start_gesture_control)
     btn_gesture.grid(row=1, columnspan=4, pady=20)
+
+ # Additional buttons
+    btn_stats = tk.Button(controls_frame, text="📈 Show Stats",
+                          font=("Arial", 14), fg="white", bg="#1DB954",
+                          command=show_play_statistics)
+    btn_stats.grid(row=2, columnspan=4, pady=20)
 
     # Status bar
     status_label = tk.Label(root, text=f"🎵 {len(music_controller.songs)} songs loaded",
