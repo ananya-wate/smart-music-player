@@ -4,6 +4,7 @@ import tkinter as tk
 import music_controller  
 import threading # Allows running gesture control in background (allows running 2 things at same time (mulitithreading))
 import matplotlib.pyplot as plt
+from PIL import Image, ImageTk  # 🆕 Added for background image support
 
 # Global variables for UI elements
 root = None #main window
@@ -121,20 +122,33 @@ def show_play_statistics():
 
 def start_app():
     global root, song_label, btn_pause
-
-    # Initialize window
-    root = tk.Tk() #create the main window
+    root = tk.Tk()
     root.title("🎵 Music Player")
     root.geometry("800x600")
-    root.configure(bg="#121212") #dark grey
 
+    # ✅ Load background image AFTER initializing root
+    # image = Image.open("C:\Users\Prafulla wate\Desktop\PYTHON\music_player\assets\SL.123119.26540.04.jpg")
+    image = Image.open(r"C:\Users\Prafulla wate\Desktop\PYTHON\music_player\assets\SL.123119.26540.04.jpg")
+    image = image.resize((800, 600))  # Resize to fit window
+    bg_photo = ImageTk.PhotoImage(image)
+
+    # ✅ Create label with image and place it behind everything
+    bg_label = tk.Label(root, image=bg_photo)
+    bg_label.image = bg_photo  # Keep a reference!
+    bg_label.place(x=0, y=0, relwidth=1, relheight=1)
+    # # Initialize window
+    # root = tk.Tk() #create the main window
+    # root.title("🎵 Music Player")
+    # root.geometry("800x600")
+    # root.configure(bg="#121212") #dark grey
+    
     # Song display
     song_label = tk.Label(root, text="No Song Playing", 
-                         font=("Arial", 24), fg="white", bg="#121212")
+                         font=("Arial", 24), fg="white", bg="#081C26")
     song_label.pack(pady=50)
 
     # Control buttons
-    controls_frame = tk.Frame(root, bg="#121212")
+    controls_frame = tk.Frame(root, bg="#081C26")
     controls_frame.pack() #keep all control buttons together
 
     #creating 4 buttons inside frame

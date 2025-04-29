@@ -3,6 +3,7 @@ import cv2 #importing opencv library for video capture and image processing
 import mediapipe as mp#to detect hand,faces, poses very easily
 import time  # to track time and control cooldown between gestures 
 from music_controller import pause, play_next, play_previous, is_paused
+from gui import update_play_count
 
 class GestureController:
     def __init__(self):# constructor
@@ -46,12 +47,15 @@ class GestureController:
                 if (current_time - self.last_gesture_time) > self.cooldown:
                     if fingers == 0:  # Fist
                         pause()  #apuses /resumes accordingly
+                        update_play_count()
                         self.last_gesture_time = current_time
                     elif fingers == 2:  # Two fingers
                         play_next()
+                        update_play_count()
                         self.last_gesture_time = current_time
                     elif fingers == 1:  # One finger
                         play_previous()
+                        update_play_count()
                         self.last_gesture_time = current_time
 
                 # Draw hand landmarks
