@@ -10,7 +10,7 @@ def db_connection():
         conn = mysql.connector.connect(
             host="localhost",
             user="root",
-            password="anu29mysql",
+            password="*******",
             database="music_player"
         )
         yield conn
